@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <title>Game</title>
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+            background-color: #5D6D7E;
+        }
+        #game {
+            width: 100%;
+            height: 100%;
+            padding: 0px;
+            margin: 0px;
+            display: block;
+        }
+
+        #board {
+            position:absolute;
+            left: 35vw;
+            top: 15vh;
+            width:25vw;
+            height:25vw;
+        }
+
+        #replay_buttons {
+            position:absolute;
+            left: 15vw;
+            top: calc(15vh + 8vw);
+            width: 18vw;
+        }
+
+        .replay_button{
+            visibility: hidden;
+        }
+
+        #play_buttons {
+            text-align:center;
+            position:absolute;
+            left: 35vw;
+            top: calc(25vw + 15vh + 5vh);
+            width: 25vw;
+            height: 10vh;
+
+        }
+
+        #game_info {
+            position: absolute;
+            left: 65vw;
+            top: calc(15vh + 5vw);
+        }
+        #table {
+            position:absolute;
+            border: 3px solid black;
+            border-collapse:collapse;
+            width: 100%;
+            height: 100%;
+        }
+        #table td {
+            text-align:center;
+            width: 10%;
+            height: 15%;
+            background-color: #E5E7E9 ;
+            padding: 0px;
+            margin: 0px;
+
+        }
+        #player {
+            font-size: 24px;
+            visibility: hidden;
+        }
+        button {
+            background-color: #008CBA;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin-left: 2px;
+            margin-right: 2px;
+            cursor: pointer;
+        }
+
+        p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+
+
+<body onLoad="set_up_game()">
+    <div id="game">
+        <div id="board">
+            <table border="1px" id="table">
+                <tr>
+                    <td id="0" > <i id="player" class="material-icons" inline="true">person</i> </td>
+                    <td id="1"> </td>
+                    <td id = "2"> </td>
+                    <td id = "3"> </td>
+                    <td id = "4"> </td>
+                    <td id = "5"> </td>
+                </tr>
+                <tr>
+                    <td id = "6"> </td>
+                    <td id = "7"> </td>
+                    <td id = "8"> </td>
+                    <td id = "9"> </td>
+                    <td id = "10"> </td>
+                    <td id = "11"> </td>
+                </tr>
+                <tr>
+                    <td id = "12"> </td>
+                    <td id = "13"> </td>
+                    <td id = "14"> </td>
+                    <td id = "15"> </td>
+                    <td id = "16"> </td>
+                    <td id = "17"> </td>
+                </tr>
+                <tr>
+                    <td id = "18"> </td>
+                    <td id = "19"> </td>
+                    <td id = "20"> </td>
+                    <td id = "21"> </td>
+                    <td id = "22"> </td>
+                    <td id = "23"> </td>
+                </tr>
+                <tr>
+                    <td id = "24"> </td>
+                    <td id = "25"> </td>
+                    <td id = "26"> </td>
+                    <td id = "27"> </td>
+                    <td id = "28"> </td>
+                    <td id = "29"> </td>
+                </tr>
+                <tr>
+                    <td id = "30"> </td>
+                    <td id = "31"> </td>
+                    <td id = "32"> </td>
+                    <td id = "33"> </td>
+                    <td id = "34"> </td>
+                    <td id = "35"> </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="replay_buttons">
+            <button id="start_over" onclick="start_over()", class="replay_button"> Play again! </button> <br><br>
+
+            <button id="replay1" onclick="replay_game(0)", class="replay_button"> Replay your first game! </button> <br><br>
+            <button id="replay2" onclick="replay_game(1)", class="replay_button"> Replay your second game! </button> <br><br>
+            <button id="replay3" onclick="replay_game(2)", class="replay_button"> Replay your third game! </button> <br><br>
+
+            <button id="new_game" onclick="set_up_game()", class="replay_button"> New game </button>
+        </div>
+
+        <div id="play_buttons">
+            <button onclick="moveup()"  id="up">UP</button><br><br>
+            <button onclick="moveleft()" id="left">LEFT</button>
+            <button onclick="moveright()" id="right">RIGHT</button><br><br>
+            <button onclick="movedown()" id="down">DOWN</button>
+        </div>
+
+        <div id="game_info">
+            <p id="goal_reached"></p>
+            <p id="mdp_reward"> </p>
+            <p id="reward_shaping"> </p>
+            <p id="num_moves"> </p>
+        </div>
+
+        </div>
+    </div>
+    <script>
+        var num_episodes = 3;
+        var episode_id;
+        var current;
+        var dim = 6;
+        var img = document.getElementById("player");
+
+        var button_down = document.getElementById("down");
+        var button_up = document.getElementById("up");
+        var button_left = document.getElementById("left");
+        var button_right = document.getElementById("right");
+        var button_start_over = document.getElementById('start_over');
+        var button_replay1 = document.getElementById('replay1');
+        var button_replay2 = document.getElementById('replay2');
+        var button_replay3 = document.getElementById('replay3');
+        var button_new_game = document.getElementById("new_game");
+
+        var text_num_moves = document.getElementById("num_moves");
+        var text_mdp_reward = document.getElementById("mdp_reward");
+        var text_reward_shaping = document.getElementById("reward_shaping");
+        var text_goal_reached = document.getElementById("goal_reached");
+
+        var val_func;
+        var goal_reward;
+
+        var curr_episode;
+        var episodes;
+        var timeouts = [];
+
+        class Episode {
+            constructor(start, goal) {
+                this.start = start;
+                this.goal = goal;
+                this.trajectory = [start];
+                this.num_steps = 0;
+                this.total_reward = 0
+            }
+
+            add_move(move) {
+                this.trajectory.push(move)
+            }
+
+            add_step() {
+                this.num_steps = this.num_steps + 1;
+            }
+
+            add_to_reward(reward) {
+                this.total_reward = this.total_reward + reward;
+            }
+        }
+
+        function set_up_game() {
+            episode_id = 0;
+            episodes = [];
+            clear_timeouts();
+            timeouts = [];
+            uncolor();
+            set_up_episode();
+            set_up_reward_function();
+        }
+
+        function set_up_reward_function() {
+            var rand = Math.floor(Math.random() * 2);
+            console.log(rand);
+            if (rand == 0) {
+                text_reward_shaping.style.visibility = 'hidden'
+            } else {
+                text_reward_shaping.style.visibility = 'visible'
+            }
+        }
+
+        function reward_func(state1, state2, goal) {
+            rew_shaping = val_func[state2] - val_func[state1];
+            return [-1, -1 + rew_shaping]
+        }
+
+        function set_up_episode() {
+            if (episode_id < num_episodes) {
+                arr = set_up_board();
+                start = arr[0];
+                goal = arr[1];
+                text_goal_reached.innerHTML = "";
+                text_mdp_reward.innerHTML = "";
+                text_reward_shaping.innerHTML ="";
+                set_up_player(start);
+                enable_buttons();
+                hide_replay_buttons();
+                get_value_function();
+                episode_id = episode_id + 1;
+                curr_episode = new Episode(start, goal);
+                episodes.push(curr_episode)
+            } else {
+                button_new_game.style.visibility = 'visible';
+                button_start_over.style.visibility = "hidden";
+                show_replay_buttons();
+            }
+
+        }
+
+        function set_up_board() {
+            start = Math.floor(Math.random() * (dim * dim));
+            goal = Math.floor(Math.random() * (dim * dim));
+            while (start == goal) {
+                goal = Math.floor(Math.random() * (dim * dim))
+            }
+            color_board(start, goal);
+            return [start, goal]
+        }
+
+        function color_board(start, goal) {
+            start_field = document.getElementById(start.toString());
+            start_field.style.backgroundColor = '#21CB0F';
+
+            text_num_moves.innerHTML = 'Number of moves in this episode: 0'
+
+        }
+
+        function set_up_player(start) {
+            start_field = document.getElementById(start.toString());
+            start_field.appendChild(img);
+            player = document.getElementById("player");
+            player.style.visibility = "visible";
+            current = start
+        }
+
+        function get_value_function() {
+            url = 'http://localhost:8000/val/'.concat(dim.toString(), '/', start.toString(), '/', goal.toString());
+            httpRequest = new XMLHttpRequest();
+
+            httpRequest.onreadystatechange = function() {
+                if (httpRequest.readyState == 4) {
+                    var response  = JSON.parse(httpRequest.response);
+                    val_func = response.val_func;
+                    goal_reward = parseInt(response.goal_reward);
+                }
+            };
+
+            httpRequest.open('GET', url, false);
+            httpRequest.send()
+        }
+
+        function enable_buttons() {
+            button_down.disabled = false;
+            button_left.disabled = false;
+            button_up.disabled = false;
+            button_right.disabled = false;
+            button_down.style.backgroundColor = '#008CBA';
+            button_left.style.backgroundColor = '#008CBA';
+            button_up.style.backgroundColor = '#008CBA';
+            button_right.style.backgroundColor = '#008CBA';
+            button_start_over.style.visibility = 'hidden';
+            button_new_game.style.visibility = 'hidden'
+        }
+
+        function movedown() {
+            var down_cell_id = current + dim;
+            var downcell = document.getElementById(down_cell_id.toString());
+            if (down_cell_id < (dim * dim)) {
+                var old_field = current;
+                downcell.appendChild(img);
+                current = down_cell_id;
+                after_valid_move('down', old_field, down_cell_id);
+                check_end()
+            }
+        }
+
+        function moveright() {
+            var right_cell_id = current + 1;
+            var rightcell = document.getElementById(right_cell_id.toString());
+            if (right_cell_id % dim != 0) {
+                rightcell.appendChild(img);
+                var old_field = current;
+                current = right_cell_id;
+                after_valid_move('right', old_field, right_cell_id);
+                check_end()
+            }
+        }
+
+        function moveup() {
+            var top_cell_id = current - dim;
+            var topcell = document.getElementById(top_cell_id.toString());
+            if (top_cell_id >= 0)  {
+                topcell.appendChild(img);
+                var old_field = current;
+                current = top_cell_id;
+                after_valid_move('up', old_field, top_cell_id);
+                check_end()
+            }
+        }
+
+        function moveleft() {
+            var left_cell_id = current - 1;
+            var leftcell = document.getElementById(left_cell_id.toString());
+            if (current % dim != 0) {
+                leftcell.appendChild(img);
+                var old_field = current;
+                current = left_cell_id;
+                after_valid_move('left', old_field, left_cell_id);
+                check_end()
+            }
+        }
+
+        function after_valid_move(direction, old_field, new_field) {
+            curr_episode.add_move(new_field);
+            curr_episode.add_move(new_field);
+            curr_episode.add_step();
+            curr_episode.add_to_reward(-1);
+            text_num_moves.innerHTML = 'Number of moves in this episode: '.concat(curr_episode.num_steps.toString());
+            var rewards = reward_func(old_field, new_field, curr_episode.goal);
+            text_mdp_reward.innerHTML = 'MDP reward for the last move: '.concat(rewards[0].toString());
+            text_reward_shaping.innerHTML = 'Heuristic reward for the last move: '.concat(rewards[1].toString())
+        }
+
+        function check_end() {
+            if (current == curr_episode.goal) {
+                disable_play_buttons();
+                goal_field = document.getElementById(goal.toString());
+                goal_field.style.backgroundColor = '#F82C1B';
+                curr_episode.add_to_reward(goal_reward);
+                text_goal_reached.innerText = 'You have reached the goal! \n ' +
+                    '                          The reward for reaching the goal is '.concat(goal_reward.toString(),
+                                                " points. \nYour total result is: ", (curr_episode.total_reward).toString(), " points.")
+            }
+        }
+
+        function disable_play_buttons() {
+            button_down.disabled = true;
+            button_left.disabled = true;
+            button_up.disabled = true;
+            button_right.disabled = true;
+            button_down.style.backgroundColor = '#E5E7E9';
+            button_left.style.backgroundColor = '#E5E7E9';
+            button_up.style.backgroundColor = '#E5E7E9';
+            button_right.style.backgroundColor = '#E5E7E9';
+            button_start_over.style.visibility = 'visible';
+            button_start_over.disabled = false;
+        }
+
+        function hide_replay_buttons() {
+            button_replay1.style.visibility = 'hidden';
+            button_replay2.style.visibility = 'hidden';
+            button_replay3.style.visibility = 'hidden'
+        }
+
+        function show_replay_buttons() {
+            button_replay1.style.visibility = 'visible';
+            button_replay2.style.visibility = 'visible';
+            button_replay3.style.visibility = 'visible'
+        }
+
+        function uncolor() {
+            var table = document.getElementById("table");
+            for (var i=0; i < dim; i++) {
+                var row = table.rows[i];
+                for (var j=0; j<dim; j++) {
+                    var cell = row.cells[j];
+                    cell.style.backgroundColor = '#E5E8E8'
+                }
+            }
+        }
+
+        function start_over() {
+            uncolor(curr_episode.start, curr_episode.goal);
+            set_up_episode();
+        }
+
+        function replay_game(ind) {
+            uncolor();
+            clear_timeouts();
+            var episode = episodes[ind];
+            var trajectory = episode.trajectory;
+            color_board(episode.start, episode.goal);
+            set_up_player(episode.start);
+            text_num_moves.innerHTML = 'Number of moves in this episode: '.concat(episode.num_steps.toString());
+            text_reward_shaping.innerHTML = "";
+            text_mdp_reward.innerHTML = "";
+            text_goal_reached.innerHTML = "";
+            var i;
+            for (i=0; i < trajectory.length; i++) {
+                var next_field = trajectory[i].toString();
+                var wait_time = i * 1000;
+                var timeout = set_timeout(next_field, wait_time)
+                timeouts.push(timeout)
+            }
+        }
+
+        function set_timeout(ind, wait_time) {
+            return setTimeout(function(){move_to_field(ind)}, wait_time);
+        }
+
+        function clear_timeouts(){
+            for (var i=0; i< timeouts.length; i++) {
+                clearTimeout(timeouts[i])
+            }
+            timeouts = [];
+        }
+
+        function move_to_field(ind) {
+            var field = document.getElementById(ind);
+            field.appendChild(img);
+        }
+    </script>
+
+</body>
+</html>
